@@ -7,11 +7,13 @@ import (
 	"github.com/spf13/viper"
 )
 
+// Version is passed in at build time via the -ldflag flag
+var Version string
+
 func initConfig() {
-	viper.AutomaticEnv()
 	viper.AddConfigPath("./config")
 
-	viper.SetDefault("version", "v0.0.0")
+	viper.SetDefault("version", Version)
 
 	switch os.Getenv("ENV") {
 	case "PROD":
@@ -19,6 +21,9 @@ func initConfig() {
 	default:
 		viper.SetConfigName("dev")
 	}
+
+	viper.SetEnvPrefix("app")
+	viper.AutomaticEnv()
 
 	if err := viper.ReadInConfig(); err != nil {
 		log.Fatalf("Error reading config file, %s", err)
