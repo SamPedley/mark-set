@@ -1,4 +1,5 @@
-FROM golang:alpine 
+FROM golang:alpine
+COPY config config
 ADD app /
 CMD ["/app"]
 
