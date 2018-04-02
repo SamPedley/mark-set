@@ -1,6 +1,5 @@
 CONTAINER=go-app
 VERSION=`git describe --tags`
-MAIN_FILES=main.go utils.go handlers.go
 LDFLAGS=-ldflags "-X main.Version=${VERSION}"
 
 init:
@@ -9,10 +8,10 @@ init:
 
 # Run the server and reload on file saves aka livereload
 watch: 
-	gin -a 8080 -i run $(MAIN_FILES) 
+	gin -a 8080 -i run *.go
 
 run:
-	go run $(LDFLAGS) $(MAIN_FILES)
+	go run $(LDFLAGS) *.go
 
 build:
 	go build $(LDFLAGS) -o app .
