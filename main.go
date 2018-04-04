@@ -1,10 +1,13 @@
 package main
 
 import (
+	"context"
 	"net/http"
+	"os"
+	"os/signal"
+	"syscall"
 	"time"
 
-	"github.com/gorilla/mux"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 )
@@ -15,10 +18,11 @@ func init() {
 
 func main() {
 	port := viper.GetString("port")
+	errChan := make(chan error, 10)
+	signalChan := make(chan os.Signal, 1)
+	signal.Notify(signalChan, syscall.SIGINT, syscall.SIGTERM)
 
-	r := mux.NewRouter()
-	r.HandleFunc("/", getRoot).Methods("GET")
-	r.HandleFunc("/info", getInfo).Methods("GET")
+	r := mainRouter()
 
 	svr := &http.Server{
 		Handler:      r,
@@ -27,6 +31,28 @@ func main() {
 		WriteTimeout: 15 * time.Second,
 	}
 
+	go func() {
+		errChan <- svr.ListenAndServe()
+	}()
+
 	log.Info("listeing on port ", port)
-	log.Fatal(svr.ListenAndServe())
+	for {
+		select {
+		case err := <-errChan:
+			if err != nil {
+				log.Fatal(err)
+			}
+		case s := <-signalChan:
+			log.WithFields(log.Fields{
+				"Signal Event": s,
+			}).Info("Stopping application")
+
+			err := svr.Shutdown(context.Background())
+			if err != nil {
+				log.Fatal("Error shuting down server", err)
+			}
+			os.Exit(0)
+
+		}
+	}
 }
