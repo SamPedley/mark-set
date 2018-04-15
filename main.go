@@ -22,7 +22,7 @@ func main() {
 	signalChan := make(chan os.Signal, 1)
 	signal.Notify(signalChan, syscall.SIGINT, syscall.SIGTERM)
 
-	r := mainRouter()
+	r := registerHandlers()
 
 	svr := &http.Server{
 		Handler:      r,

@@ -8,15 +8,18 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/sampedley/mark-set/withLogs"
+
 	"github.com/gorilla/mux"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 )
 
-func mainRouter() *mux.Router {
+func registerHandlers() *mux.Router {
 	r := mux.NewRouter()
-	r.Use(withContext)
-	r.Use(withLogging)
+	// r.Use(withContext)
+	// r.Use(withLogging)
+	r.Use(withLogs.LogWrapper)
 
 	r.HandleFunc("/", getRoot).Methods("GET")
 	r.HandleFunc("/info", getInfo).Methods("GET")
